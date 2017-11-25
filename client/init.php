@@ -6,4 +6,7 @@
  * Time: 20:24
  */
 define('init_correct',ture);
+
+
 //test
+phpinfo();
