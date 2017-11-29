@@ -14,19 +14,23 @@ class Request
      * @param array $data 要发送的数据
      * @
      * */
-    public static function post($url,$data,$debug=0){
+    public static function post($url,$data,$return_data=0,$debug=0){
         $data = array('data'=>$data);
         $init = curl_init($url);
 
-        curl_setopt($init,CURLOPT_HEADER,1);
+        //是否输出response header
+        curl_setopt($init,CURLOPT_HEADER,$debug);
         curl_setopt($init, CURLOPT_POST, 1);
-        curl_setopt($init,CURLOPT_RETURNTRANSFER,$debug);
+        //是否返回数据
+        curl_setopt($init,CURLOPT_RETURNTRANSFER,$return_data);
         curl_setopt($init,CURLOPT_POSTFIELDS,$data);
 
         $res = curl_exec($init);
         $http_code = curl_getinfo($init,CURLINFO_HTTP_CODE);
         curl_close($init);
-        if ($debug){
+        if ($return_data){
+            return $res;
+        }elseif ($debug){
             echo $res;
             echo "<br>";
         }
