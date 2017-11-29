@@ -40,12 +40,12 @@ class Save
      * @param $client_id
      * @return int
      */
-    private function judgeIsFirstClient($client_id){
+    private function  judgeIsFirstClient($client_id){
         if(empty($client_id)){
             return -1;
         }
         return  $this->database->count('client',[
-            'client_id' => $client_id
+            'id' => $client_id
         ]);
 
     }
@@ -58,7 +58,7 @@ class Save
      */
     public function saveHeartBeat($heartBeat){
         try {
-            $preNumber = tableNumber('client_log');
+            $preNumber = $this->tableNumber('client_log');
             if (!empty($heartBeat['client_id'])) {
                 $client_id = $heartBeat['client_id'];
 
@@ -73,15 +73,16 @@ class Save
                 $content = "";
             }
 
-            $saveHeartBeat_info = $this->database->select('client_log', [
+            $saveHeartBeat_info = $this->database->insert('client_log', [
                 'client_id' => $client_id,
                 'content' => $content
             ]);
 
+
             $afterNumber = $this->tableNumber('client_log');
 
             if ($afterNumber - $preNumber == 1) {
-                Common::save_http_log('[info]', 'saveHeartBeat($heartBeat) 成功插入 sql ：' . $saveHeartBeat_info);
+                Common::save_http_log('[info]', 'saveHeartBeat($heartBeat) 成功插入 sql ：' . json_encode($saveHeartBeat_info));
                 return true;
             } else {
                 Common::save_http_log('[error]', 'saveHeartBeat($heartBeat) 插入数据失败');
@@ -101,14 +102,14 @@ class Save
     public function saveClient($client){
 
         try {
-            if (!empty($client["id"])) {
-                $client_id = $client["id"];
+            if (!empty($client['id'])) {
+                $client_id = $client['id'];
             } else {
                 Common::save_http_log('[error]', 'saveClient($client) client_id 为空');
                 return false;
             };
 
-            if ($this->judgeIsFirstClient($client["id"]) <= 0) {
+            if ($this->judgeIsFirstClient($client['id']) > 0) {
                 Common::save_http_log('[error]', 'saveClient($client) client_id不唯一');
                 return false;
             }
@@ -132,20 +133,22 @@ class Save
                 $money_percent = 0;
             }
 
-            $preNumber = tableNumber('client');
+            $preNumber = $this->tableNumber('client');
 
             $saveClient = $this->database->insert('client', [
+                'id' => $client_id,
                 'type' => $type,
                 'money' => $money,
                 'money_percent' => $money_percent
             ]);
 
+
             $afterNumber = $this->tableNumber('client');
             if ($afterNumber - $preNumber == 1) {
-                Common::save_http_log('[info]', 'saveClient($client) 成功插入数据 ：' . $saveClient);
+                Common::save_http_log('[info]', 'saveClient($client) 成功插入数据 ：' . json_encode($saveClient));
                 return true;
             } else {
-                Common::save_http_log('[error]', 'saveClient($client) 插入数据失败');
+                Common::save_http_log('[error]', 'saveClient($client) 插入数据失败'. json_encode($saveClient));
                 return false;
             }
         } catch (Exception $e) {
@@ -155,6 +158,7 @@ class Save
 
     }
 
+
     /**
      * 更新应付金钱
      * @param $client[id(client_id),money]
@@ -162,7 +166,7 @@ class Save
      */
     public function updateMoney($client){
         try {
-            if ($this->judgeIsFirstClient($client["id"]) <= 0) {
+            if ($this->judgeIsFirstClient($client["id"]) > 0) {
                 Common::save_http_log('[error]', 'setMoney($client) client_id为空');
                 return false;
             }
@@ -180,12 +184,12 @@ class Save
                 return false;
             }
 
-            if ($updateMoney > 0) {
-                Common::save_http_log('[info]', 'setMoney($client) 成功更新money');
+            if ($updateMoney) {
+                Common::save_http_log('[info]', 'setMoney($client) 成功更新money'.json_encode($updateMoney));
 
                 return true;
             } else {
-                Common::save_http_log('[error]', 'setMoney($client) 更新money错误');
+                Common::save_http_log('[error]', 'setMoney($client) 更新money错误'.json_encode($updateMoney));
                 return false;
             }
         } catch (Exception $e) {
@@ -201,7 +205,7 @@ class Save
      */
     public function  updateMoneyPer($client){
         try {
-            if ($this->judgeIsFirstClient($client["id"]) <= 0) {
+            if ($this->judgeIsFirstClient($client["id"]) > 0) {
                 Common::save_http_log('[error]', 'updateMoneyPer($client) client_id为空');
                 return false;
             }
@@ -215,16 +219,16 @@ class Save
                     ]
                 );
             } else {
-                Common::save_http_log('[error]', 'updateMoneyPer($client) money错误');
+                Common::save_http_log('[error]', 'updateMoneyPer($client) money_percent错误');
                 return false;
             }
 
-            if ($updateMoney > 0) {
-                Common::save_http_log('[info]', 'updateMoneyPer($client) 成功更新money');
+            if ($updateMoney) {
+                Common::save_http_log('[info]', 'updateMoneyPer($client) 成功更新money_percent'.json_encode($updateMoney));
 
                 return true;
             } else {
-                Common::save_http_log('[error]', 'updateMoneyPer($client) 更新money错误');
+                Common::save_http_log('[error]', 'updateMoneyPer($client) 更新money错误'.json_encode($updateMoney));
                 return false;
             }
         } catch (Exception $e) {
@@ -234,9 +238,6 @@ class Save
     }
 
 
-
 }
-
-
 
 ?>
